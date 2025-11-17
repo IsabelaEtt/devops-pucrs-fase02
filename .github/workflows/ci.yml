@@ -1,0 +1,114 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build e Testes
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Executar testes
+        run: npm test
+
+      - name: Verificar cobertura de código
+        run: npm test -- --coverage --coverageReporters=text-summary
+
+      - name: Upload de relatório de cobertura
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+  lint:
+    name: Verificação de Qualidade
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Verificar estrutura do projeto
+        run: |
+          echo "Verificando estrutura de arquivos..."
+          test -f package.json && echo "✓ package.json encontrado"
+          test -f src/app.js && echo "✓ src/app.js encontrado"
+          test -f src/app.test.js && echo "✓ src/app.test.js encontrado"
+          test -f src/server.js && echo "✓ src/server.js encontrado"
+
+  security:
+    name: Auditoria de Segurança
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Auditoria de segurança
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  build-status:
+    name: Status Final do Build
+    runs-on: ubuntu-latest
+    needs: [build-and-test, lint, security]
+    if: always()
+
+    steps:
+      - name: Verificar status dos jobs
+        run: |
+          echo "Build e Testes: ${{ needs.build-and-test.result }}"
+          echo "Qualidade: ${{ needs.lint.result }}"
+          echo "Segurança: ${{ needs.security.result }}"
+          
+          if [ "${{ needs.build-and-test.result }}" != "success" ]; then
+            echo "❌ Build ou testes falharam"
+            exit 1
+          fi
+          
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "❌ Verificação de qualidade falhou"
+            exit 1
+          fi
+          
+          echo "✅ Pipeline executado com sucesso!"
+

@@ -1,0 +1,22 @@
+{
+  "name": "devops-pucrs-fase02",
+  "version": "1.0.0",
+  "description": "Solução da Fase 02 do projeto da disciplina de DevOps na prática",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "keywords": ["api", "nodejs", "express"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  }
+}
+
