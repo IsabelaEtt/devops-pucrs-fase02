@@ -93,8 +93,8 @@ O projeto utiliza **workflows separados** para CI e CD, garantindo melhor contro
         ▼                                     ▼
       ┌──────────┐    ┌──────────┐    ┌──────────┐
       │  Tests   │    │ Quality  │    │ Security │  ← Jobs executam em paralelo
-      │ Node     │    │ Checks   │    │  Audit   │
-      │ 18/20    │    │          │    │          │
+      │  Node    │    │ Checks   │    │  Audit   │
+      │  18/20   │    │          │    │          │
       └──────────┘    └──────────┘    └──────────┘
         │                                     │
         └──────────────────┬──────────────────┘
