@@ -89,15 +89,13 @@ Gere uma imagem dessa arquiteturaÇ
       ┌──────────┐    ┌──────────┐    ┌──────────┐
       │  Tests   │    │ Quality  │    │ Security │  ← Jobs executam em paralelo
       │  Node    │    │ Checks   │    │  Audit   │
-      │  18/20   │    │          │    │          │
       └──────────┘    └──────────┘    └──────────┘
         │                                     │
         └──────────────────┬──────────────────┘
                            │
                            ▼
                   ┌────────────────┐
-                  │   CI Status    │
-                  │   All Passed   │
+                  │   CI Summary   │
                   └────────────────┘
                            │
                            │     workflow_run trigger
@@ -124,8 +122,7 @@ Gere uma imagem dessa arquiteturaÇ
         └──────────────────┬──────────────────┘
                            ▼
                   ┌────────────────┐
-                  │     Summary    │
-                  │     Report     │
+                  │   CD Summary   │
                   └────────────────┘
                            │
         ┌──────────────────┴──────────────────┐
@@ -141,7 +138,7 @@ Gere uma imagem dessa arquiteturaÇ
 
 1. Developer faz push para `main`
 2. CI dispara automaticamente executando 3 jobs em paralelo:
-   - Testes em Node.js 18.x e 20.x
+   - Testes em Node.js 20.x
    - Verificações de qualidade do código
    - Auditoria de segurança (npm audit)
 3. CI verifica resultados - todos os jobs devem passar
@@ -161,7 +158,7 @@ Gere uma imagem dessa arquiteturaÇ
 | **Duração** | ~2-3 min | ~2-3 min | ~4-6 min |
 | **Jobs Paralelos** | 3 | 2 | 5 |
 | **Artefatos Gerados** | Coverage + Security Report | Docker Image + S3 Package | 4 |
-| **Node Versions** | 18.x, 20.x | 20.x | - |
+| **Node Versions** | 20.x | 20.x | - |
 
 ### 🔨 Detalhes: CI - Continuous Integration
 
@@ -171,7 +168,7 @@ Gere uma imagem dessa arquiteturaÇ
 **Jobs**:
 
 1. **Test** - Testes Automatizados
-   - Matrix strategy: Node.js 18.x e 20.x
+   - Matrix strategy: Node.js 20.x
    - Executa suite de testes completa
    - Gera relatório de cobertura
    - Upload de artefatos de cobertura
