@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "docker:build": "docker build -t devops-pucrs-fase02 .",
+    "docker:run": "docker run -p 3000:3000 devops-pucrs-fase02",
+    "docker:compose:up": "docker-compose up",
+    "docker:compose:down": "docker-compose down"
   },
   "keywords": ["api", "nodejs", "express"],
   "author": "",

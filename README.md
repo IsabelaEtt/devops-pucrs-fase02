@@ -24,9 +24,6 @@ API simples desenvolvida para demonstrar práticas de DevOps, com foco em Integr
 - [Infraestrutura](#️-infraestrutura)
 - [Configuração e Deploy](#-configuração-e-deploy)
 - [Tecnologias](#️-tecnologias)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Documentação Adicional](#-documentação-adicional)
-
 
 
 ## 🚀 Início Rápido
@@ -68,14 +65,12 @@ npm run docker:compose
 | `/` | GET | Mensagem principal | `{ "message": "Hello World" }` |
 | `/health` | GET | Health check | `{ "status": "OK" }` |
 
----
-
 ## ⚙️ CI/CD Pipeline
 
 O projeto utiliza **workflows separados** para CI e CD, garantindo melhor controle, segurança e clareza no processo de deployment.
 
 ### 🏗️ Arquitetura do Pipeline
-
+Gere uma imagem dessa arquiteturaÇ
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     DEVELOPER WORKFLOW                          │
@@ -226,8 +221,6 @@ O projeto utiliza **workflows separados** para CI e CD, garantindo melhor contro
    - Links para artefatos gerados
    - Confirmação de sucesso
 
----
-
 ## 🏗️ Infraestrutura
 
 ### AWS Resources (Terraform)
@@ -267,8 +260,6 @@ terraform apply
 # Destruir recursos (cuidado!)
 terraform destroy
 ```
-
----
 
 ## 🔧 Configuração e Deploy
 
@@ -360,8 +351,6 @@ npm start
 # No GitHub:
 Actions → CD - Continuous Delivery → Run workflow → main → Run workflow
 ```
-
----
 
 ## 🛠️ Tecnologias
 
