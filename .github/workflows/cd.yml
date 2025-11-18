@@ -99,12 +99,12 @@ jobs:
 
       - name: Upload para o S3
         run: |
-          aws s3 cp app-${{ github.sha }}.zip s3://devops-pucrs-artifacts-bucket/releases/app-${{ github.sha }}.zip
-          aws s3 cp app-${{ github.sha }}.zip s3://devops-pucrs-artifacts-bucket/releases/latest.zip
+          aws s3 cp app-${{ github.sha }}.zip s3://devops-fase-02-dev-bucket/releases/app-${{ github.sha }}.zip
+          aws s3 cp app-${{ github.sha }}.zip s3://devops-fase-02-dev-bucket/releases/latest.zip
 
       - name: Status final do Deploy
         run: |
           echo "✅ Deploy concluído com sucesso!"
           echo "📦 Package: app-${{ github.sha }}.zip"
-          echo "🗂️ S3 Location: s3://devops-pucrs-artifacts-bucket/releases/"
+          echo "🗂️ S3 Location: s3://devops-fase-02-dev-bucket/releases/"
           echo "🐳 Docker Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
