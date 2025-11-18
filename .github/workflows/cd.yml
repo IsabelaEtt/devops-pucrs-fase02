@@ -19,13 +19,13 @@ jobs:
         name: Verificar Status do CI
         runs-on: ubuntu-latest
         if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-        
+
         steps:
-            - name: Verificar se o CI foi bem-sucedido
-                run: |
-                    echo "O pipeline de CI foi concluído com sucesso."
-                    echo "Prosseguindo com o CD..."
-    
+          - name: Verificar se o CI foi bem-sucedido
+            run: |
+              echo "O pipeline de CI foi concluído com sucesso."
+              echo "Prosseguindo com o CD..."
+
     build-docker:
         name: Build Docker Image
         needs: check-ci
