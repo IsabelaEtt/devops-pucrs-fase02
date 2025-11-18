@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Verificar se o CI foi bem-sucedido
         run: |
-          echo "O pipeline de CI foi concluído com sucesso."
+          echo "✅ O pipeline de CI foi concluído com sucesso."
           echo "Prosseguindo com o CD..."
 
   build-docker:
