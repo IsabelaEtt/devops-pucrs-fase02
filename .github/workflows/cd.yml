@@ -1,113 +1,110 @@
 name: CD Pipeline
 
 on:
-    workflow_run:
-        workflows: ["CI Pipeline"]
-        types:
-            - completed
-        branches:
-            - main
-
-    workflow_dispatch:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
 
 env:
-    REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-    check-ci:
-        name: Verificar Status do CI
-        runs-on: ubuntu-latest
-        if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-
-        steps:
-          - name: Verificar se o CI foi bem-sucedido
-            run: |
-              echo "O pipeline de CI foi concluído com sucesso."
-              echo "Prosseguindo com o CD..."
+  check-ci:
+    name: Verificar Status do CI
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Verificar se o CI foi bem-sucedido
+        run: |
+          echo "O pipeline de CI foi concluído com sucesso."
+          echo "Prosseguindo com o CD..."
 
     build-docker:
-        name: Build Docker Image
-        needs: check-ci
-        runs-on: ubuntu-latest
-        if:  github.event_name == 'push' && github.ref == 'refs/heads/main'
+      name: Build Docker Image
+      needs: check-ci
+      runs-on: ubuntu-latest
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      
+      permissions:
+        contents: read
+        packages: write
 
-        permissions:
-            contents: read
-            packages: write
+      steps:
+        - name: Checkout de código
+          uses: actions/checkout@v4
 
-        steps:
-          - name: Checkout de código
-            uses: actions/checkout@v4
+        - name: Configurar Docker Buildx
+          uses: docker/setup-buildx-action@v2
 
-          - name: Configurar Docker Buildx
-            uses: docker/setup-buildx-action@v2
-            
-            - name: Login no GitHub Container Registry
-                uses: docker/login-action@v3
-                with:
-                registry: ${{ env.REGISTRY }}
-                username: ${{ github.actor }}
-                password: ${{ secrets.GITHUB_TOKEN }}
+        - name: Login no GitHub Container Registry
+          uses: docker/login-action@v3
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Extrair metadata
-                id: meta
-                uses: docker/metadata-action@v5
-                with:
-                    images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-                    tags: |
-                        type=ref,event=branch
-                        type=sha,prefix={{branch}}-
-                        type=raw,value=latest,enable={{is_default_branch}}
-            
-            - name: Build e Push da Imagem Docker
-                uses: docker/build-push-action@v5
-                with:
-                    context: .
-                    push: true
-                    tags: ${{ steps.meta.outputs.tags }}
-                    labels: ${{ steps.meta.outputs.labels }}
-                    cache-from: type=gha
-                    cache-to: type=gha,mode=max
+        - name: Extrair metadata
+          id: meta
+          uses: docker/metadata-action@v5
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            tags: |
+              type=ref,event=branch
+              type=sha,prefix={{branch}}-
+              type=raw,value=latest,enable={{is_default_branch}}
+
+        - name: Build e Push da Imagem Docker
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
+            labels: ${{ steps.meta.outputs.labels }}
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
+
     deploy-s3:
-        name: Deploy no S3
-        needs: check-ci
-        runs-on: ubuntu-latest
-        if:  github.event_name == 'push' && github.ref == 'refs/heads/main'
+      name: Deploy no S3
+      needs: check-ci
+      runs-on: ubuntu-latest
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-        steps:
-            - name: Checkout de código
-                uses: actions/checkout@v4
+      steps:
+        - name: Checkout de código
+          uses: actions/checkout@v4
 
-            - name: Configurar Node.js
-                uses: actions/setup-node@v4
-                with:
-                    node-version: '20.x'
-      
-            - name: Instalar dependências
-                run: npm ci --only=production
-      
-            - name: Criar pacote de implantação
-                run: |
-                mkdir -p dist
-                cp -r src package*.json dist/
-                cd dist && zip -r ../app-${{ github.sha }}.zip .
-      
-            - name: Configurar credenciais AWS
-                uses: aws-actions/configure-aws-credentials@v4
-                with:
-                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                aws-region: us-east-1
-      
-            - name: Upload para o S3
-                run: |
-                aws s3 cp app-${{ github.sha }}.zip s3://devops-pucrs-artifacts-bucket/releases/app-${{ github.sha }}.zip
-                aws s3 cp app-${{ github.sha }}.zip s3://devops-pucrs-artifacts-bucket/releases/latest.zip
-            
-            - name: Status final do Deploy
-                run: |
-                echo "✅ Deploy concluído com sucesso!"
-                echo "📦 Package: app-${{ github.sha }}.zip"
-                echo "🗂️ S3 Location: s3://devops-pucrs-artifacts-bucket/releases/"
-                echo "🐳 Docker Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+        - name: Configurar Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20.x'
+
+        - name: Instalar dependências
+          run: npm ci --only=production
+
+        - name: Criar pacote de implantação
+          run: |
+            mkdir -p dist
+            cp -r src package*.json dist/
+            cd dist && zip -r ../app-${{ github.sha }}.zip .
+
+        - name: Configurar credenciais AWS
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
+
+        - name: Upload para o S3
+          run: |
+            aws s3 cp app-${{ github.sha }}.zip s3://devops-pucrs-artifacts-bucket/releases/app-${{ github.sha }}.zip
+            aws s3 cp app-${{ github.sha }}.zip s3://devops-pucrs-artifacts-bucket/releases/latest.zip
+
+        - name: Status final do Deploy
+          run: |
+            echo "✅ Deploy concluído com sucesso!"
+            echo "📦 Package: app-${{ github.sha }}.zip"
+            echo "🗂️ S3 Location: s3://devops-pucrs-artifacts-bucket/releases/"
+            echo "🐳 Docker Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
